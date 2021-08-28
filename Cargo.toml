@@ -2,8 +2,17 @@
 name = "xyzpub"
 version = "0.1.0"
 edition = "2018"
+authors = ["KaiWitt <kaiwitt@protonmail.com>"]
+description = "Convert xpubs and xprvs to different versions."
+readme = "README.md"
+repository = "https://github.com/KaiWitt/xyzpub"
+license = "MIT"
+keywords = ["bitcoin", "xpub", "slip132"]
+categories = ["cryptography::cryptocurrencies"]
+publish = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 
 [dependencies]
 bitcoin = "0.27.0"
