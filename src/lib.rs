@@ -6,12 +6,12 @@
 //! ## Example
 //!
 //! ```rust
-//! use xyzpub::{replace_version_base58, Version};
+//! use xyzpub::{convert_version, Version};
 //!
 //! let xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
 //! let expected_zpub = "zpub6qUQGY8YyN3ZxYEgf8J6KCQBqQAbdSWaT9RK54L5FWTTh8na8NkCkZpYHnWt7zEwNhqd6p9Utq562cSZsqGqFE87NNsUKnyZeJ5KvbhfC8E";
 //!
-//! let result = replace_version_base58(xpub, &Version::Zpub).unwrap();
+//! let result = convert_version(xpub, &Version::Zpub).unwrap();
 //!
 //! assert_eq!(result, expected_zpub);
 //! ```
@@ -209,7 +209,7 @@ pub fn replace_version_bytes<B: AsRef<[u8]>>(bytes: B, target: &Version) -> Resu
 
 /// Replaces the first 4 bytes of a base58 string with the target's version and returns the new string.
 /// Also checks if the input is a correct address.
-pub fn replace_version_base58<S: AsRef<str>>(str: S, target: &Version) -> Result<String, Error> {
+pub fn convert_version<S: AsRef<str>>(str: S, target: &Version) -> Result<String, Error> {
     let bytes = base58::from_check(str.as_ref())?;
     let replaced = replace_version_bytes(bytes, target)?;
 
@@ -219,13 +219,13 @@ pub fn replace_version_base58<S: AsRef<str>>(str: S, target: &Version) -> Result
 #[cfg(test)]
 mod tests {
     use crate::Version;
-    use crate::{replace_version_base58, replace_version_bytes};
+    use crate::{convert_version, replace_version_bytes};
 
     #[test]
     fn err_when_too_short() {
         let short = "abc";
 
-        let result = replace_version_base58(short, &Version::Zpub);
+        let result = convert_version(short, &Version::Zpub);
 
         assert!(result.is_err());
     }
@@ -243,7 +243,7 @@ mod tests {
     fn xpub_not_valid() {
         let xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYekkudhUd9yLb6qx39T9nMdj";
 
-        let result = replace_version_base58(xpub, &Version::Ypub);
+        let result = convert_version(xpub, &Version::Ypub);
 
         assert!(result.is_err());
     }
@@ -253,7 +253,7 @@ mod tests {
         let xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
         let expected_ypub = "ypub6We8xsTdpgW67F3ZpmWU77JgfS29gpX5Y2u6HfSBsW5ae2yLsiae8WAQGaZJ85b1y4ipMLYvSAiY9Kq1A8rpSzSWW3B3jtA5Na1gXzZ8iqF";
 
-        let result = replace_version_base58(xpub, &Version::Ypub).unwrap();
+        let result = convert_version(xpub, &Version::Ypub).unwrap();
 
         assert_eq!(result, expected_ypub);
     }
@@ -263,7 +263,7 @@ mod tests {
         let xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
         let expected_zpub = "zpub6qUQGY8YyN3ZxYEgf8J6KCQBqQAbdSWaT9RK54L5FWTTh8na8NkCkZpYHnWt7zEwNhqd6p9Utq562cSZsqGqFE87NNsUKnyZeJ5KvbhfC8E";
 
-        let result = replace_version_base58(xpub, &Version::Zpub).unwrap();
+        let result = convert_version(xpub, &Version::Zpub).unwrap();
 
         assert_eq!(result, expected_zpub);
     }
@@ -273,7 +273,7 @@ mod tests {
         let zpub = "zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs";
         let expected_xpub = "xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3XyuvPEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V";
 
-        let result = replace_version_base58(zpub, &Version::Xpub).unwrap();
+        let result = convert_version(zpub, &Version::Xpub).unwrap();
 
         assert_eq!(result, expected_xpub);
     }
@@ -283,7 +283,7 @@ mod tests {
         let xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
         let expected_tpub = "tpubDCBWBScQPGv4Xk3JSbhw6wYYpayMjb2eAYyArpbSqQTbLDpphHGAetB6VQgVeftLML8vDSUEWcC2xDi3qJJ3YCDChJDvqVzpgoYSuT52MhJ";
 
-        let result = replace_version_base58(xpub, &Version::Tpub).unwrap();
+        let result = convert_version(xpub, &Version::Tpub).unwrap();
 
         assert_eq!(result, expected_tpub);
     }

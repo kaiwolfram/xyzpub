@@ -6,12 +6,12 @@ Convert xpubs and xprvs to different versions.
 ## Example
 
 ```rust
-use xyzpub::{replace_version_base58, Version};
+use xyzpub::{convert_version, Version};
 
 let xpub = "xpub6BosfCnifzxcFwrSzQiqu2DBVTshkCXacvNsWGYJVVhhawA7d4R5WSWGFNbi8Aw6ZRc1brxMyWMzG3DSSSSoekkudhUd9yLb6qx39T9nMdj";
 let expected_zpub = "zpub6qUQGY8YyN3ZxYEgf8J6KCQBqQAbdSWaT9RK54L5FWTTh8na8NkCkZpYHnWt7zEwNhqd6p9Utq562cSZsqGqFE87NNsUKnyZeJ5KvbhfC8E";
 
-let result = replace_version_base58(xpub, &Version::Zpub).unwrap();
+let result = convert_version(xpub, &Version::Zpub).unwrap();
 
 assert_eq!(result, expected_zpub);
 ```
