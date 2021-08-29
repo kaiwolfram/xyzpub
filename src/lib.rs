@@ -16,6 +16,8 @@
 //! assert_eq!(result, expected_zpub);
 //! ```
 //!
+use std::str::FromStr;
+
 use bitcoin::util::base58;
 
 /// Version bytes xpub: bitcoin mainnet public key P2PKH or P2SH
@@ -89,6 +91,8 @@ pub enum Error {
     BadChecksum(u32, u32),
     /// Input is not a valid address.
     InvalidAddress,
+    /// Version prefix is unknown.
+    UnknownVersionPrefix,
 }
 
 impl From<base58::Error> for Error {
@@ -191,6 +195,35 @@ impl Version {
             Version::ZprvMultisig => VERSION_ZPRV_MULTISIG,
             Version::UprvMultisig => VERSION_UPRV_MULTISIG,
             Version::VprvMultisig => VERSION_VPRV_MULTISIG,
+        }
+    }
+}
+
+impl FromStr for Version {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "xpub" => Ok(Version::Xpub),
+            "ypub" => Ok(Version::Ypub),
+            "zpub" => Ok(Version::Zpub),
+            "tpub" => Ok(Version::Tpub),
+            "upub" => Ok(Version::Upub),
+            "vpub" => Ok(Version::Vpub),
+            "xprv" => Ok(Version::Xprv),
+            "yprv" => Ok(Version::Yprv),
+            "zprv" => Ok(Version::Zprv),
+            "tprv" => Ok(Version::Tprv),
+            "uprv" => Ok(Version::Uprv),
+            "vprv" => Ok(Version::Vprv),
+            "Ypub" => Ok(Version::YpubMultisig),
+            "Zpub" => Ok(Version::ZpubMultisig),
+            "Upub" => Ok(Version::UpubMultisig),
+            "Vpub" => Ok(Version::VpubMultisig),
+            "Yprv" => Ok(Version::YprvMultisig),
+            "Zprv" => Ok(Version::ZprvMultisig),
+            "Uprv" => Ok(Version::UprvMultisig),
+            "Vprv" => Ok(Version::VprvMultisig),
+            _ => Err(Self::Err::UnknownVersionPrefix),
         }
     }
 }
