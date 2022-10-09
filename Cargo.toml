@@ -15,4 +15,4 @@ publish = true
 
 
 [dependencies]
-bitcoin = "0.27.0"
+bitcoin = "0.29.0"
