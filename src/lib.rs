@@ -256,10 +256,10 @@ pub fn replace_version_bytes<B: AsRef<[u8]>>(bytes: B, target: &Version) -> Resu
 /// Replaces the first 4 bytes of a base58 string with the target's version and returns the new string.
 /// Also checks if the input is a correct address.
 pub fn convert_version<S: AsRef<str>>(str: S, target: &Version) -> Result<String, XYZPubError> {
-    let bytes = base58::from_check(str.as_ref())?;
+    let bytes = base58::decode_check(str.as_ref())?;
     let replaced = replace_version_bytes(bytes, target)?;
 
-    Ok(base58::check_encode_slice(&replaced))
+    Ok(base58::encode_check(&replaced))
 }
 
 #[cfg(test)]
