@@ -16,9 +16,10 @@
 //! assert_eq!(result, expected_zpub);
 //! ```
 //!
+use std::fmt;
 use std::str::FromStr;
-
-use bitcoin::util::base58;
+use thiserror;
+use bitcoin::base58;
 
 /// Version bytes xpub: bitcoin mainnet public key P2PKH or P2SH
 pub const VERSION_XPUB: [u8; 4] = [0x04, 0x88, 0xB2, 0x1E];
@@ -81,8 +82,8 @@ pub const VERSION_VPUB_MULTISIG: [u8; 4] = [0x02, 0x57, 0x54, 0x83];
 pub const VERSION_VPRV_MULTISIG: [u8; 4] = [0x02, 0x57, 0x50, 0x48];
 
 /// xyzpub error.
-#[derive(Debug, PartialEq, Eq)]
-pub enum Error {
+#[derive(Debug, PartialEq, Eq, thiserror::Error)]
+pub enum XYZPubError {
     /// Input is too short or has an invalid base58 length.
     InvalidLength(usize),
     /// Base58 input is not base58.
@@ -94,8 +95,20 @@ pub enum Error {
     /// Version prefix is unknown.
     UnknownVersionPrefix,
 }
-
-impl From<base58::Error> for Error {
+impl fmt::Display for XYZPubError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            XYZPubError::InvalidLength(length) => write!(f, "Input has an invalid base58 length: {}", length),
+            XYZPubError::InvalidBase58Char(char) => write!(f, "Invalid base58 character: {}", char),
+            XYZPubError::BadChecksum(expected, actual) => {
+                write!(f, "Checksum is not correct. Expected: {}, Actual: {}", expected, actual)
+            }
+            XYZPubError::InvalidAddress => write!(f, "Input is not a valid address"),
+            XYZPubError::UnknownVersionPrefix => write!(f, "Unknown version prefix"),
+        }
+    }
+}
+impl From<base58::Error> for XYZPubError {
     fn from(err: base58::Error) -> Self {
         match err {
             base58::Error::BadByte(byte) => Self::InvalidBase58Char(byte),
@@ -200,7 +213,7 @@ impl Version {
 }
 
 impl FromStr for Version {
-    type Err = Error;
+    type Err = XYZPubError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "xpub" => Ok(Version::Xpub),
@@ -230,10 +243,10 @@ impl FromStr for Version {
 
 /// Replaces the first 4 bytes of a byte slice with the target's version and returns a new byte vec.
 /// Does not check if extended public/private key is valid and only replaces the version bytes.
-pub fn replace_version_bytes<B: AsRef<[u8]>>(bytes: B, target: &Version) -> Result<Vec<u8>, Error> {
+pub fn replace_version_bytes<B: AsRef<[u8]>>(bytes: B, target: &Version) -> Result<Vec<u8>, XYZPubError> {
     let mut vec = bytes.as_ref().to_vec();
     if vec.len() < 4 {
-        return Err(Error::InvalidLength(vec.len()));
+        return Err(XYZPubError::InvalidLength(vec.len()));
     }
     vec[0..4].copy_from_slice(&target.bytes());
 
@@ -242,17 +255,16 @@ pub fn replace_version_bytes<B: AsRef<[u8]>>(bytes: B, target: &Version) -> Resu
 
 /// Replaces the first 4 bytes of a base58 string with the target's version and returns the new string.
 /// Also checks if the input is a correct address.
-pub fn convert_version<S: AsRef<str>>(str: S, target: &Version) -> Result<String, Error> {
-    let bytes = base58::from_check(str.as_ref())?;
+pub fn convert_version<S: AsRef<str>>(str: S, target: &Version) -> Result<String, XYZPubError> {
+    let bytes = base58::decode_check(str.as_ref())?;
     let replaced = replace_version_bytes(bytes, target)?;
 
-    Ok(base58::check_encode_slice(&replaced))
+    Ok(base58::encode_check(&replaced))
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::Version;
-    use crate::{convert_version, replace_version_bytes};
+mod xyzpubtests {
+    use super::*;
 
     #[test]
     fn err_when_too_short() {
