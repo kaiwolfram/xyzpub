@@ -15,4 +15,5 @@ publish = true
 
 
 [dependencies]
-bitcoin = "0.29.0"
+bitcoin = "0.30.1"
+thiserror = "1.0.49"
